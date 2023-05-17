@@ -39,12 +39,23 @@ async function run() {
     const query={_id: new ObjectId(id)};
         const options = {
            // Include only the `title` and `imdb` fields in the returned document
-           projection: { title: 1,service_id:1, price: 1,img: 1 },
+           projection: { title: 1,service_id:1, price:1 , img:1 },
            };
     const result=await serviceCollection.findOne(query,options);
     res.send(result)
 
  })
+//get some data 
+app.get('/bookings',async(req,res)=>{
+  console.log(req.query.email);
+  let query={};
+  if(req.query?.email){
+    query={email : req.query.email}
+  }
+  const result=await checkoutCollection.find(query).toArray();
+  res.send(result)
+})
+
 
  //post checkout..
  app.post('/checkout/',async(req,res)=>{
@@ -54,6 +65,29 @@ async function run() {
     res.send(result)
  })
 
+//delete bookings specific item...
+
+app.delete('/bookings/:id',async(req,res)=>{
+  const id=req.params.id;
+  const query={_id: new ObjectId(id)};
+  const result=await checkoutCollection.deleteOne(query);
+  res.send(result)
+})
+//update//
+app.patch('/bookings/:id',async(req,res)=>{
+  const id=req.params.id;
+  const filter={_id: new ObjectId(id)};
+  
+  const updatedBooking=req.body;
+  console.log(updatedBooking)
+  const updateDoc={
+    $set:{
+      status:updatedBooking.status
+    }
+  }
+  const result=await checkoutCollection.updateOne(filter,updateDoc);
+  res.send(result)
+})
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
