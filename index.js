@@ -1,5 +1,6 @@
 const express =require('express');
 const cors=require('cors');
+const jwt=require('jsonwebtoken')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app=express();
@@ -28,6 +29,20 @@ async function run() {
     await client.connect();
  const serviceCollection=client.db('carDoctor').collection('services');
  const checkoutCollection=client.db('carDoctor').collection('checkout')
+
+ //JWT TOKEN 
+ app.post('/jwt',(req,res)=>{
+  const user=req.body;
+  console.log(user);
+  const token=jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{
+    expiresIn:'1h'});
+    console.log(token);
+    //todo object token
+    res.send({token})
+ })
+
+
+ //GET FOR SERVICE DATA
  app.get('/services',async(req,res)=>{
     const cursor=serviceCollection.find();
     const result=await cursor.toArray();
@@ -73,22 +88,22 @@ app.delete('/bookings/:id',async(req,res)=>{
   const result=await checkoutCollection.deleteOne(query);
   res.send(result)
 })
-//update//
-app.patch('/bookings/:id',async(req,res)=>{
-  const id=req.params.id;
-  const filter={_id: new ObjectId(id)};
-  
-  const updatedBooking=req.body;
-  console.log(updatedBooking)
-  const updateDoc={
-    $set:{
-      status:updatedBooking.status
-    }
-  }
-  const result=await checkoutCollection.updateOne(filter,updateDoc);
-  res.send(result)
-})
-
+////update//
+//app.patch('/bookings/:id',async(req,res)=>{
+//  const id=req.params.id;
+//  const filter={_id: new ObjectId(id)};
+//  
+//  const updatedBooking=req.body;
+//  console.log(updatedBooking)
+//  const updateDoc={
+//    $set:{
+//      status:updatedBooking.status
+//    },
+//  };
+//  const result=await checkoutCollection.updateOne(filter,updateDoc);
+//  res.send(result)
+//})
+//
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
